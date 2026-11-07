@@ -1,0 +1,25 @@
+{
+  "name": "deadlock-coach",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.17.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test test/*.test.mjs",
+    "start": "node --env-file-if-exists=.env dist/bot.js",
+    "register": "node --env-file=.env dist/register.js",
+    "refresh": "node dist/refresh.js"
+  },
+  "dependencies": {
+    "discord.js": "14.28.1",
+    "@discordjs/voice": "0.19.2",
+    "opusscript": "0.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "~5.9.3"
+  }
+}
