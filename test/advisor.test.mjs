@@ -40,7 +40,7 @@ test("description-only matchup flows through Jev decisions and wording; independ
     if (qs.enemy)
       return { enemy: "h0", ally: "unknown", candidate: "s0", threat: "control", intent: "purchase" };
     if (qs.item) {
-      assert.equal(state.enemy.abilities[0].stats[0].scale.stat_scale, 1.4);
+      assert.equal(state.abilities[0].stats[0].scale.stat_scale, 1.4);
       return {
         item: Object.keys(qs.item.criteria).find((k) => qs.item.criteria[k]?.startsWith("Debuff Reducer")),
         tactic: "wall",
@@ -50,19 +50,19 @@ test("description-only matchup flows through Jev decisions and wording; independ
   };
   const coach = new MatchAdvisor(db, judge, async (plan) => {
     seen.push(plan);
-    return "Fight away from walls to avoid the stun.";
+    return plan.verifiedNotes;
   });
   const q = "I have 700 souls. A bruiser keeps pinning me against a wall.";
-  assert.match(await coach.ask("g", "a", q), /^Save 900 more souls for Debuff Reducer/);
+  assert.match(await coach.ask("g", "a", q), /Save 900 more souls for Debuff Reducer/);
   assert.match(
     await coach.ask("g", "b", "Same wall stun", { player: { budget: 1800 } }),
-    /^Buy Debuff Reducer now/,
+    /Buy Debuff Reducer/,
   );
-  assert.match(await coach.ask("g", "a", "That wall stun again"), /^Save 900/);
-  assert.equal(seen.at(-1).history.length, 1);
+  assert.match(await coach.ask("g", "a", "That wall stun again"), /Save 900/);
+  assert.match(seen.at(-1).verifiedNotes, /Save 900/);
   coach.reset("g", "a");
-  assert.match(await coach.ask("g", "a", "That wall stun again"), /^Buy Debuff Reducer \(/);
-  assert.equal(seen.at(-1).history.length, 0);
+  assert.match(await coach.ask("g", "a", "That wall stun again"), /Buy Debuff Reducer/);
+  assert.doesNotMatch(seen.at(-1).verifiedNotes, /Save 900/);
 });
 test("ability scaling and component links require explicit data", () => {
   const improved = { class_name: "improved", name: "Improved Spirit", component_items: ["extra"] };

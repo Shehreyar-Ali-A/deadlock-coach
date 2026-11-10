@@ -13,6 +13,7 @@ type Property = {
   value?: string | number;
   label?: string;
   postfix?: string;
+  prefix?: string;
   tooltip_section?: string;
   disable_value?: string;
   conditional?: string;
@@ -33,6 +34,7 @@ export interface Asset {
   component_items?: string[];
   shopable?: boolean;
   disabled?: boolean;
+  tooltip_details?: {additional_header_properties?: string[]; info_sections?: {basic_properties?: string[]; properties_block?: {properties?: {important_property?: string; status_effect_value?: string}[]}[]}[]};
   tooltip_sections?: { section_attributes?: { loc_string?: string; properties?: string[]; important_properties?: string[]; elevated_properties?: string[] }[] }[];
 }
 interface Hero {
@@ -181,5 +183,6 @@ export async function loadKnowledge() {
     return saved;
   }
 }
+
 
 

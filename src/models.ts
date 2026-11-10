@@ -17,7 +17,12 @@ export async function decide(state: unknown, questions: Record<string, Question>
     if (a?.type !== "choice" || typeof a.choice !== "string" || !Object.hasOwn(q.criteria, a.choice))
       throw Error("Invalid Jev decision");
     // A weak identity guess must not turn into a claimed matchup.
-    if (Object.hasOwn(q.criteria, "unknown") && typeof a.confidence === "number" && a.confidence < 0.65) {
+    if (
+      ["ally", "enemy", "build"].includes(id) &&
+      Object.hasOwn(q.criteria, "unknown") &&
+      typeof a.confidence === "number" &&
+      a.confidence < 0.65
+    ) {
       result[id] = "unknown";
     } else {
       result[id] = a.choice;
@@ -29,8 +34,11 @@ function deadline(ms: number, signal?: AbortSignal) {
   const timeout = AbortSignal.timeout(ms);
   return signal ? AbortSignal.any([timeout, signal]) : timeout;
 }
-export async function wording(plan: {task?:string}, signal?: AbortSignal): Promise<string> {
-  const explain = plan.task === "explain";
+export async function wording(
+  plan: Record<string, unknown> & { task?: string },
+  signal?: AbortSignal,
+): Promise<string> {
+  const explain = ["compare", "strategy", "counter_items", "plan"].includes(plan.task ?? "");
   const r = await fetch("http://127.0.0.1:11434/api/chat", {
     method: "POST",
     signal: deadline(25000, signal),
@@ -38,22 +46,21 @@ export async function wording(plan: {task?:string}, signal?: AbortSignal): Promi
     body: JSON.stringify({
       model: process.env.COACH_WRITER_MODEL || "qwen2.5:1.5b",
       stream: false,
-      options: { temperature: 0, num_predict: explain ? 280 : 120 },
+      options: { temperature: 0, num_predict: explain ? 400 : 220 },
       messages: [
         {
           role: "system",
-          content: explain ? "Answer the specific question in plain English using the supplied evidence. For comparisons cover each named item, its trigger and the tradeoff. For scaling explain the affected stat and supported numbers. Use bullets if clearer. Give enough detail to be useful, up to 135 words. Report missing evidence. Do not give an unsolicited purchase instruction." :
-            "Write the reason and one practical tip for a player mid-fight, in at most 30 words of plain English. The player already sees the purchase line. Start directly with the mechanic or tactic. Example style: It shortens the slow. Break line of sight before the next shot. Use only the selected evidence; examples are style only. Never repeat the purchase, infer enemy gear, or invent stats.",
+          content:
+            "Turn the supplied notes into a direct answer in conversational English. Include named choices and their specific conditions. Use only these notes. Two to four sentences are usually sufficient. Stop immediately after the answer. Do not add a conclusion, invented mechanics or advice from memory.",
         },
         { role: "user", content: JSON.stringify(plan) },
       ],
     }),
   });
   if (!r.ok) throw Error("Ollama HTTP " + r.status);
-  const answer = (await r.json()).message?.content;
-  if (typeof answer !== "string" || !answer.trim() || answer.trim().split(/\s+/).length > (explain ? 150 : 36) || answer.length > (explain ? 1400 : 320)) throw Error("Invalid wording");
+  const response = await r.json();
+  const answer = response.message?.content;
+  if (response.done_reason === "length") throw Error("writer-truncated");
+  if (typeof answer !== "string" || !answer.trim() || answer.length > 1850) throw Error("Invalid wording");
   return answer.trim();
 }
-
-
-

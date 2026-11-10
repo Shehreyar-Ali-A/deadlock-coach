@@ -11,7 +11,9 @@ Use `/ask` or `/listen` to describe a fight, ask how an ability scales, or compa
 
 ### What the two models do
 
-Stat lookups such as “List the items that increase fire rate” scan the regular shop and show prices, values and triggers in chat. Voice gives a short overview. Comparisons and explanations get a longer response budget than purchases. Jev classifies the reported matchup and nominates an item from the full shop. It then selects an action, ability, and positioning tactic from the versioned evidence. The bot resolves cost, ownership and budget locally. A local Qwen 2.5 1.5B model writes the short explanation. Jev checks the wording against the evidence before Discord posts or speaks it. A complete turn normally uses three hosted decision requests. A clarification can finish earlier. If wording or its check fails, the bot uses the selected action and source text. A failed decision request reports unavailability.
+Jev routes each AI-mode turn to a stat lookup, explanation/comparison, matchup strategy, counter-item selection, purchase, build sequence, or clarification. Lookups append every verified matching shop row. The in-memory graph links hero ability clauses to damage, healing and control effects and to shop mechanics that can address them. Edges carry source ability IDs and version. Jev selects supported options. Qwen writes the complete answer and Jev checks its claims. Rejected or unavailable wording uses the grounded notes. For an optional console decision trace set COACH_TRACE=1 in .env and restart. It records the route, opponent, evidence IDs, selected items, Jev call count and fallback reason. No transcript or credentials are logged by this trace.
+
+After building, run `node --env-file=.env dist/replay.js` from the repository to replay the Abrams/Billy questions separately and back-to-back, plus both fire-rate phrasings. This uses the configured Jev account and local Ollama model and prints answers and traces without contacting Discord.
 
 The Jev service receives the question or transcript, recent turns from that player, supplied match facts, and relevant game data. The local writer receives the decision and its evidence. Context is per user and guild; use `/reset` between matches. `MatchReport` in `src/advisor.ts` accepts player hero, build, budget and inventory, opposing hero and inventory, and a death description. Today the player supplies the observations.
 
@@ -42,10 +44,10 @@ npm.cmd run build
 npm.cmd test
 npm.cmd run refresh
 npm.cmd run register
-npm.cmd start
+npm.cmd run dev
 ```
 
-Registration replaces this application's commands in the configured development guild. Repeat it after changing command definitions. Ordinary restarts require only `npm.cmd start`. Rebuild after source changes.
+Registration replaces this application's commands in the configured development guild. Repeat it after changing command definitions. For development, leave `npm.cmd run dev` running. Saving an imported TypeScript file or the root `.env` restarts the bot automatically. A reload disconnects voice and clears in-memory match context. Stop the watcher with Ctrl+C. Use `npm.cmd run build` to typecheck and generate the compiled files for registration, tests, or the one-shot `npm.cmd start` command.
 
 ## First match in local rules mode
 
@@ -65,5 +67,3 @@ The [Deadlock API project](https://github.com/deadlock-api) publishes both endpo
 Edit the four evidence checks and reasons in `src/catalog.ts`. The local cache includes the source URL, client version, retrieval time and matching asset records. Startup refreshes after 24 hours. Failed refreshes preserve the last snapshot. A changed mechanic disables its rule. With no usable catalog the bot reports that it cannot verify a purchase. Questions use in-memory data. To update a running bot, run `npm.cmd run refresh` and restart it. The pure `recommend(goal, player, items)` function accepts hero, build, budget and inventory explicitly for future integrations.
 
 Voice uses [Discord voice](https://discord.js.org/docs/packages/voice/stable), [Azure short-audio transcription](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-speech-to-text-short) and [Azure speech synthesis](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-text-to-speech). If voice connection times out, check voice-channel capacity, Connect/Speak overrides, server mute and outbound UDP. For Azure errors, verify that the custom subdomain and key belong to the same active Speech resource.
-
-
