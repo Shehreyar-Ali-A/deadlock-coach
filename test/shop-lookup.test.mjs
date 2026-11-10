@@ -32,7 +32,7 @@ test("Jev routes a paraphrase to the complete normal shop lookup", async () => {
   const db = { items: [dash, slow, rapid], heroes: [], abilities: [] };
   const c = new MatchAdvisor(
     db,
-    async (_, qs) => (qs.intent ? { intent: "lookup" } : qs.stat ? { stat: "s0" } : { valid: "yes" }),
+    async (_, qs) => (qs.reference ? { first: "stat" } : qs.stat ? { stat: "s0" } : { valid: "yes" }),
     async () => "There are two options.",
   );
   const answer = await c.ask("g", "u", "What makes my gun shoot faster?");

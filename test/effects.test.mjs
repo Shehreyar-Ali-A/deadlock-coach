@@ -44,15 +44,21 @@ test("Bashdown damage components retain independent source and coverage", () => 
 test("switching opponents replaces enemy evidence and preserves the purchase in a writer failure", async () => {
   const traces = [];
   const judge = async (state, questions) => {
-    if (questions.intent) {
+    if (questions.reference) {
       const billy = state.question.includes("Billy");
-      return { intent: billy ? "counter_items" : "strategy", enemy: billy ? "h1" : "h0", threat: "melee" };
+      return {
+        first: "matchup",
+        next: billy ? "rank" : "done",
+        order: billy ? "one" : "none",
+        enemy: billy ? "h1" : "h0",
+        threat: "melee",
+      };
     }
-    if (questions.item) {
+    if (questions.item || questions.ability) {
       if (state.enemy === "Billy") {
         assert.deepEqual(state.history, []);
         assert.ok(state.effects.every((e) => e.hero === "Billy"));
-        assert.equal(state.reported.enemy.inventory, undefined);
+        assert.equal(state.enemy, "Billy");
       }
       return { item: "i0", second: "none", ability: "a0" };
     }
@@ -72,8 +78,8 @@ test("switching opponents replaces enemy evidence and preserves the purchase in 
   assert.match(answer, /Armor.*Melee Resist/);
   assert.doesNotMatch(answer, /Abrams/);
   assert.deepEqual(
-    traces.map((t) => t.route),
-    ["strategy", "counter_items"],
+    traces.map((t) => t.operations),
+    [["matchup"], ["matchup", "rank"]],
   );
   assert.equal(traces[1].fallback, "writer-unavailable");
 });

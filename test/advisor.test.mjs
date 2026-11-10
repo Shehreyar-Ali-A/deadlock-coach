@@ -38,7 +38,15 @@ test("description-only matchup flows through Jev decisions and wording; independ
   const seen = [];
   const judge = async (state, qs) => {
     if (qs.enemy)
-      return { enemy: "h0", ally: "unknown", candidate: "s0", threat: "control", intent: "purchase" };
+      return {
+        enemy: "h0",
+        ally: "unknown",
+        candidate: "s0",
+        threat: "control",
+        first: "matchup",
+        next: "rank",
+        order: "one",
+      };
     if (qs.item) {
       assert.equal(state.abilities[0].stats[0].scale.stat_scale, 1.4);
       return {
@@ -79,7 +87,7 @@ test("ambiguous threat asks a follow-up; rejected embellishment never reaches Di
     if (qs.enemy) {
       const intent = first ? "clarify" : "purchase";
       first = false;
-      return { intent, enemy: "unknown", ally: "unknown", candidate: "s0", threat: "control" };
+      return { first: intent === "clarify" ? "clarify" : "rank", missing: "source", enemy: "unknown" };
     }
     if (qs.item) return { item: "i0", tactic: "wall" };
     return { valid: "no" };

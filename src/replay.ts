@@ -10,6 +10,8 @@ for (const [session, question] of [
   ["parry-followup", "What does Rebuttal do?"],
   ["parry-followup", "How does that help against Billy?"],
   ["parry-followup", "But what if I want to parry and stun the melee abilities of a character, is there any item that allows me to do that?"],
+  ["second-compound", "Can one item interrupt a channel and silence its caster on that same activation?"],
+  ["mixed", "Which fire rate items cost up to 1600 souls, and which one should I buy for reliable fire rate?"],
   ["solo-abrams", abrams],
   ["solo-billy", billy],
   ["same-player", abrams],
@@ -20,4 +22,3 @@ for (const [session, question] of [
   console.log(question);
   console.log(await advisor.ask("local-replay", session, question));
 }
-

@@ -11,7 +11,7 @@ Use `/ask` or `/listen` to describe a fight, ask how an ability scales, or compa
 
 ### What the two models do
 
-Jev routes each AI-mode turn to a stat lookup, explanation/comparison, matchup strategy, counter-item selection, purchase, build sequence, or clarification. Lookups append every verified matching shop row. The in-memory graph links hero ability clauses to damage, healing and control effects and to shop mechanics that can address them. Edges carry source ability IDs and version. Jev selects supported options. Qwen writes the complete answer and Jev checks its claims. Rejected or unavailable wording uses the grounded notes. For an optional console decision trace set COACH_TRACE=1 in .env and restart. It records the route, opponent, evidence IDs, selected items, Jev call count and fallback reason. No transcript or credentials are logged by this trace.
+This branch experiments with a composable Jev operation planner. See [functional changes and replay instructions](OPERATION-PLANNER.md) for the differences from main, evidence checks and known limits.
 
 After building, run `node --env-file=.env dist/replay.js` from the repository to replay the Abrams/Billy questions separately and back-to-back, plus both fire-rate phrasings. This uses the configured Jev account and local Ollama model and prints answers and traces without contacting Discord.
 
